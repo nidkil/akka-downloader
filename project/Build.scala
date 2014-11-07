@@ -1,7 +1,7 @@
 import sbt._
 
 object Version {
-  val scalaDownloader = "v0.5.4"
+  val scalaDownloader = "v0.6.0"
 }
 
 object Projects {

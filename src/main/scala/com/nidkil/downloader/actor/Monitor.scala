@@ -17,9 +17,9 @@ class Monitor(controller: ActorRef) extends Actor with MonitorEventType with Act
   import Controller._
   import Monitor._
 
-  def sendComplete: Unit = {
-    log.info(s"Send Completed [$download][$chunks]")
-    controller ! Completed(download)
+  def sendDownloadCompleted: Unit = {
+    log.info(s"Send DownloadCompleted [$download][$chunks]")
+    controller ! DownloadingCompleted(download)
   }
 
   def monitorReceive: Receive = {

@@ -6,7 +6,7 @@
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
+			<pattern>%date{ISO8601} %-5level %logger %X{sourceThread} - %msg%n
 			</pattern>
 		</encoder>
 	</appender>
@@ -14,7 +14,7 @@
 	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
 		<file>${LOG_HOME}/${LOG_FILE_NAME}</file>
 		<encoder>
-			<pattern>%date %-5level [%thread] %-5level %logger{35} - %msg%n</pattern>
+			<pattern>%date{ISO8601} %-5level %logger %X{sourceThread} - %msg%n</pattern>
 		</encoder>
 	</appender>
 

@@ -1,11 +1,15 @@
 package com.nidkil.downloader.actor
 
 import java.io.File
+
 import com.nidkil.downloader.cleaner.DefaultCleaner
 import com.nidkil.downloader.datatypes.Download
+
+import Controller.DownloadCompleted
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
+import akka.actor.actorRef2Scala
 
 object Cleaner {
   case class Clean(download: Download, tempFile: File)
@@ -23,7 +27,7 @@ class Cleaner(controller: ActorRef, monitor: ActorRef) extends Actor with ActorL
       val cleaner = new DefaultCleaner()
       cleaner.clean(clean.download, clean.tempFile)
       
-      controller ! Completed(clean.download)
+      sender ! DownloadCompleted(clean.download)
     }
     case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
   }

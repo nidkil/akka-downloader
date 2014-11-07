@@ -1,15 +1,15 @@
 package com.nidkil.downloader.actor
 
-import com.nidkil.downloader.io.DownloadProvider
-import akka.actor.ActorLogging
-import com.nidkil.downloader.splitter.DefaultSplitter
 import com.nidkil.downloader.datatypes.Download
+import com.nidkil.downloader.io.DownloadProvider
+import com.nidkil.downloader.splitter.DefaultSplitter
+import com.nidkil.downloader.splitter.DefaultSplitter.ratioMinMaxStrategy
+
+import Controller.DownloadingStart
 import akka.actor.Actor
+import akka.actor.ActorLogging
 import akka.actor.ActorRef
-import com.nidkil.downloader.io.DownloadProvider
-import com.nidkil.downloader.datatypes.Download
-import com.nidkil.downloader.splitter.DefaultSplitter
-import java.io.File
+import akka.actor.actorRef2Scala
 
 object Splitter {
   case class Split(download: Download)  
@@ -32,9 +32,9 @@ class Splitter(monitor: ActorRef) extends Actor with ActorLogging {
       
       val splitter = new DefaultSplitter()
       //TODO Make configurable
-      val chunks = splitter.split(rfi, split.download.append, new File(split.download.workDir, split.download.id), ratioMinMaxStrategy)
+      val chunks = splitter.split(rfi, split.download.resumeDownload, split.download.workDir, ratioMinMaxStrategy)
       
-      sender ! StartDownload(split.download, chunks, rfi)
+      sender ! DownloadingStart(split.download, chunks, rfi)
     }
     case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
   }
