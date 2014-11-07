@@ -25,7 +25,7 @@ class Merger(validator: ActorRef, monitor: ActorRef) extends Actor with ActorLog
       val merger = new DefaultMerger()
       merger.merge(merge.download, merge.chunks)
       
-      validator ! Validate(merge.download, merge.rfi, merger.tempFile)
+      validator.tell(Validate(merge.download, merge.rfi, merger.tempFile), sender)
     }
     case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
   }

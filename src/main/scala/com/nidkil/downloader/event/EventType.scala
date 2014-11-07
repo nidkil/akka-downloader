@@ -28,10 +28,11 @@ trait MonitorEventType extends EventTypeReceiver with ActorLogging { this: Actor
   var chunksCompleted = 0;
   var chunkCount = -1;
 
-  def sendComplete
+  def sendDownloadCompleted
   
   def eventTypeReceive: Receive = {
     case MonitorChunks(download, chunks) => {
+      log.info(s"Received MonitorChunks [download=$download][chunks=$chunks]")
       this.download = download
       this.chunks = chunks
       chunkCount = chunks.size
@@ -41,7 +42,7 @@ trait MonitorEventType extends EventTypeReceiver with ActorLogging { this: Actor
       
       chunksCompleted += 1
       
-      if (chunkCount == chunksCompleted) sendComplete
+      if (chunkCount == chunksCompleted) sendDownloadCompleted
     }
     case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
   }
