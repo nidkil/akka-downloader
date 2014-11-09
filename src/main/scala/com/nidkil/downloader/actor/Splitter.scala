@@ -4,12 +4,12 @@ import com.nidkil.downloader.datatypes.Download
 import com.nidkil.downloader.io.DownloadProvider
 import com.nidkil.downloader.splitter.DefaultSplitter
 import com.nidkil.downloader.splitter.DefaultSplitter.ratioMinMaxStrategy
-
 import Controller.DownloadingStart
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.ActorRef
 import akka.actor.actorRef2Scala
+import com.nidkil.downloader.akka.extension.Settings
 
 object Splitter {
   case class Split(download: Download)  
@@ -30,9 +30,11 @@ class Splitter(monitor: ActorRef) extends Actor with ActorLogging {
 
       log.info(s"Remote file info [$rfi]")
       
-      val splitter = new DefaultSplitter()
-      //TODO Make configurable
-      val chunks = splitter.split(rfi, split.download.resumeDownload, split.download.workDir, ratioMinMaxStrategy)
+      val settings = Settings(context.system) 
+      val splitter = settings.splitter
+      //val strategy = settings.strategy.asInstanceOf[Int]
+      //val chunks = splitter.split(rfi, split.download.resumeDownload, split.download.workDir, strategy)
+      val chunks = splitter.split(rfi, split.download.resumeDownload, split.download.workDir, DefaultSplitter.ratioMaxStrategy)
       
       sender ! DownloadingStart(split.download, chunks, rfi)
     }
