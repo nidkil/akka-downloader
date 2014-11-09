@@ -32,9 +32,8 @@ class Splitter(monitor: ActorRef) extends Actor with ActorLogging {
       
       val settings = Settings(context.system) 
       val splitter = settings.splitter
-      //val strategy = settings.strategy.asInstanceOf[Int]
-      //val chunks = splitter.split(rfi, split.download.resumeDownload, split.download.workDir, strategy)
-      val chunks = splitter.split(rfi, split.download.resumeDownload, split.download.workDir, DefaultSplitter.ratioMaxStrategy)
+      val strategy: Long => Int = settings.strategy(_).asInstanceOf[Int]
+      val chunks = splitter.split(rfi, split.download.resumeDownload, split.download.workDir, strategy)
       
       sender ! DownloadingStart(split.download, chunks, rfi)
     }
