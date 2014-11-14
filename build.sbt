@@ -4,7 +4,7 @@ name := "AkkaDownloader"
 
 organization := "nidkil.com"
 
-version := "0.1.0-SNAPSHOT"
+version := "0.2.0-SNAPSHOT"
 
 scalaVersion := "2.11.2"
 
