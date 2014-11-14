@@ -23,13 +23,14 @@ class SettingsImpl(config: Config) extends Extension {
 
   def cleaner = createInstance[Cleaner](config.getString("downloader.dependencies.cleaner"))
 
-  def strategy = {
+  def strategy: Long => Int = {
     import scala.reflect.runtime.{ universe => ru }
     val strategyName = config.getString("downloader.dependencies.splitterStrategy")
     val instanceMirror = ru.runtimeMirror(getClass.getClassLoader).reflect(DefaultSplitter)
-    val strategyMethod = ru.typeOf[DefaultSplitter.type].declaration(ru.newTermName(strategyName)).asMethod
-
-    instanceMirror.reflectMethod(strategyMethod)
+    val strategyMethod = ru.typeOf[DefaultSplitter.type].decl(ru.TermName(strategyName)).asMethod
+    val strategy = instanceMirror.reflectMethod(strategyMethod)
+    val strategyFunc: Long => Int = strategy(_).asInstanceOf[Int]
+    strategyFunc
   }
 
   private def createInstance[T](classFQN: String) = {

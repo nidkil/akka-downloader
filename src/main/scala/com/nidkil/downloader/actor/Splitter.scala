@@ -25,19 +25,23 @@ class Splitter(monitor: ActorRef) extends Actor with ActorLogging {
     case split: Split => {
       log.info(s"Received Split [${split.download}]")
 
-      val provider = new DownloadProvider()
-      val rfi = provider.remoteFileInfo(split.download.url)
-
-      log.info(s"Remote file info [$rfi]")
-      
-      val settings = Settings(context.system) 
-      val splitter = settings.splitter
-      val strategy: Long => Int = settings.strategy(_).asInstanceOf[Int]
-      val chunks = splitter.split(rfi, split.download.resumeDownload, split.download.workDir, strategy)
-      
-      sender ! DownloadingStart(split.download, chunks, rfi)
+      try {
+        val provider = new DownloadProvider()
+        val rfi = provider.remoteFileInfo(split.download.url)
+  
+        log.info(s"Remote file info [$rfi]")
+        
+        val settings = Settings(context.system) 
+        val splitter = settings.splitter
+        val strategy = settings.strategy
+        val chunks = splitter.split(rfi, split.download.resumeDownload, split.download.workDir, strategy)
+        
+        sender ! DownloadingStart(split.download, chunks, rfi)
+      } catch {
+        case e: IllegalStateException => sender ! DownloadFailed(e)
+      } 
     }
-    case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
+    case x => log.warning(s"Unknown message received by ${self.path} from ${sender.path} [${x.getClass}, value=$x]")
   }
 
 }

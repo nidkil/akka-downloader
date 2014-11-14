@@ -29,7 +29,7 @@ class Merger(validator: ActorRef, monitor: ActorRef) extends Actor with ActorLog
       
       validator.tell(Validate(merge.download, merge.rfi, merger.tempFile), sender)
     }
-    case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
+    case x => log.warning(s"Unknown message received by ${self.path} from ${sender.path} [${x.getClass}, value=$x]")
   }
 
 }
