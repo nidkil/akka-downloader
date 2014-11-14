@@ -8,6 +8,7 @@ import akka.actor.ActorLogging
 import com.nidkil.downloader.merger.DefaultMerger
 import akka.actor.ActorRef
 import com.nidkil.downloader.datatypes.RemoteFileInfo
+import com.nidkil.downloader.akka.extension.Settings
 
 object Merger {
   case class MergeChunks(download: Download, chunks: LinkedHashSet[Chunk], rfi: RemoteFileInfo)
@@ -22,12 +23,13 @@ class Merger(validator: ActorRef, monitor: ActorRef) extends Actor with ActorLog
     case merge: MergeChunks => {
       log.info(s"Received MergeChunks [${merge.download}][chunks=${merge.chunks.size}]")
       
-      val merger = new DefaultMerger()
+      val settings = Settings(context.system) 
+      val merger = settings.merger
       merger.merge(merge.download, merge.chunks)
       
-      validator ! Validate(merge.download, merge.rfi, merger.tempFile)
+      validator.tell(Validate(merge.download, merge.rfi, merger.tempFile), sender)
     }
-    case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
+    case x => log.warning(s"Unknown message received by ${self.path} from ${sender.path} [${x.getClass}, value=$x]")
   }
 
 }

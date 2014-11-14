@@ -3,7 +3,6 @@ package com.nidkil.downloader.actor
 import scala.collection.mutable.LinkedHashSet
 import com.nidkil.downloader.datatypes.Chunk
 import com.nidkil.downloader.datatypes.Download
-import Downloader.DownloadChunk
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import com.nidkil.downloader.validator.ChecksumValidator
@@ -23,7 +22,7 @@ class Validator(cleaner: ActorRef, monitor: ActorRef) extends Actor with ActorLo
   import Validator._
 
   def receive = {
-    case validate: Validate => {
+    case validate: Validate =>
       log.info(s"Received Validate [${validate.download}]")
       
       if (validate.download.checksum == null) {
@@ -34,9 +33,8 @@ class Validator(cleaner: ActorRef, monitor: ActorRef) extends Actor with ActorLo
         validator.validate(validate.tempFile)
       }
       
-      cleaner ! Clean(validate.download, validate.tempFile)
-    }
-    case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
+      cleaner.tell(Clean(validate.download, validate.tempFile), sender)
+    case x => log.warning(s"Unknown message received by ${self.path} from ${sender.path} [${x.getClass}, value=$x]")
   }
 
 }

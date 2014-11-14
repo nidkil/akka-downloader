@@ -5,6 +5,8 @@ import com.nidkil.downloader.datatypes.Chunk
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import com.nidkil.downloader.datatypes.Download
+import akka.actor.ActorRef
+import java.net.URL
 
 trait EventTypeSender {
   def sendEvent[T](event: T): Unit
@@ -19,30 +21,37 @@ object EventType {
   case class ChunkCompleted(chunk: Chunk)
 }
 
+case class MonitorDownload(controller: ActorRef, download: Download, chunks: LinkedHashSet[Chunk], var chunkCount: Int, var chunksCompleted: Int)
+
 trait MonitorEventType extends EventTypeReceiver with ActorLogging { this: Actor =>
   
   import EventType._
+  import scala.collection.mutable.Map
 
-  var download: Download = null
-  var chunks: LinkedHashSet[Chunk] = null
-  var chunksCompleted = 0;
-  var chunkCount = -1;
+  var downloads = Map.empty[URL, MonitorDownload]
 
-  def sendComplete
+  def sendDownloadCompleted(monitor: MonitorDownload): Unit
   
   def eventTypeReceive: Receive = {
     case MonitorChunks(download, chunks) => {
-      this.download = download
-      this.chunks = chunks
-      chunkCount = chunks.size
-    }
-    case ChunkCompleted(chunk) => { 
-      log.info(s"Received ChunkCompleted [chunkCount=$chunkCount, chunksCompleted=${chunksCompleted + 1}, $chunk")
+      log.info(s"Received MonitorChunks [sender=$sender][download=$download][chunks=$chunks]")
       
-      chunksCompleted += 1
+      if(downloads.contains(download.url)) throw new Exception(s"Download exists [$download]")
       
-      if (chunkCount == chunksCompleted) sendComplete
+      downloads += download.url -> MonitorDownload(sender, download, chunks, chunks.size, 0)
     }
-    case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
+    case ChunkCompleted(chunk) => {
+      if(!downloads.contains(chunk.url)) throw new Exception(s"Unkown download [$chunk]")
+      
+      val monitor = downloads(chunk.url)
+      
+      monitor.chunksCompleted += 1
+      downloads += monitor.download.url -> monitor
+      
+      log.info(s"Received ChunkCompleted [chunkCount=${monitor.chunkCount}, chunksCompleted=${monitor.chunksCompleted}, $chunk")
+      
+      if (monitor.chunkCount == monitor.chunksCompleted) sendDownloadCompleted(monitor)
+    }
+    case x => log.warning(s"Unknown message received by ${self.path} from ${sender.path} [${x.getClass}, value=$x]")
   }
 }
