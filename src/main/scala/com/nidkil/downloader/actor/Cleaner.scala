@@ -29,7 +29,7 @@ class Cleaner(controller: ActorRef, monitor: ActorRef) extends Actor with ActorL
       
       sender ! DownloadCompleted(clean.download)
     }
-    case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
+    case x => log.warning(s"Unknown message received by ${self.path} from ${sender.path} [${x.getClass}, value=$x]")
   }
 
 }

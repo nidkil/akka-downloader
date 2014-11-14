@@ -22,7 +22,7 @@ class Validator(cleaner: ActorRef, monitor: ActorRef) extends Actor with ActorLo
   import Validator._
 
   def receive = {
-    case validate: Validate => {
+    case validate: Validate =>
       log.info(s"Received Validate [${validate.download}]")
       
       if (validate.download.checksum == null) {
@@ -34,8 +34,7 @@ class Validator(cleaner: ActorRef, monitor: ActorRef) extends Actor with ActorLo
       }
       
       cleaner.tell(Clean(validate.download, validate.tempFile), sender)
-    }
-    case x => log.warning(s"Unknown message received by ${self.path} [${x.getClass}, value=$x]")
+    case x => log.warning(s"Unknown message received by ${self.path} from ${sender.path} [${x.getClass}, value=$x]")
   }
 
 }

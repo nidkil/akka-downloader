@@ -10,6 +10,8 @@ scalaVersion := "2.11.2"
 
 EclipseKeys.withSource := true
 
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
+
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
